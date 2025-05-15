@@ -16,30 +16,46 @@
   <div class="upload-box">
     <p>Select one or more PDF, TXT, or RTF files:</p>
     <input type="file" id="fileInput" multiple accept=".pdf,.txt,.rtf" />
-    <button onclick="simulateUpload()">Simulate Upload</button>
+    <button onclick="uploadFiles()">Upload</button>
+
     <ul id="fileList" class="file-list"></ul>
   </div>
 
   <script>
-    function simulateUpload() {
-      const input = document.getElementById('fileInput');
-      const fileList = document.getElementById('fileList');
-      fileList.innerHTML = '';
+  async function uploadFiles() {
+    const input = document.getElementById('fileInput');
+    const fileList = document.getElementById('fileList');
+    fileList.innerHTML = '';
 
-      if (!input.files.length) {
-        alert('Please select at least one file.');
-        return;
-      }
-
-      for (const file of input.files) {
-        const li = document.createElement('li');
-        li.textContent = `✅ Simulated upload of ${file.name}`;
-        fileList.appendChild(li);
-      }
-
-      // Optional: clear file input after upload
-      input.value = '';
+    if (!input.files.length) {
+      alert('Please select at least one file.');
+      return;
     }
-  </script>
+
+    for (const file of input.files) {
+      const formData = new FormData();
+      formData.append('data', file, file.name);
+
+      const li = document.createElement('li');
+      li.textContent = `Uploading ${file.name}...`;
+      fileList.appendChild(li);
+
+      try {
+        const res = await fetch('https://n8n-selfhost-1-z0rb.onrender.com/webhook-test/upload-case-file', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!res.ok) throw new Error(res.statusText);
+        li.textContent = `✅ ${file.name} uploaded successfully`;
+      } catch (err) {
+        li.textContent = `❌ Failed to upload ${file.name}`;
+      }
+    }
+
+    // Clear input after upload
+    input.value = '';
+  }
+</script>
 </body>
 </html>
