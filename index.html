@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Lawla – Upload Case Files</title>
+  <style>
+    body { font-family: sans-serif; padding: 2rem; background: #f8f9fb; }
+    .upload-box { border: 2px dashed #3A6EA5; padding: 2rem; text-align: center; border-radius: 8px; background: #fff; }
+    .file-list { margin-top: 1rem; list-style: disc; color: #2E8B57; }
+    button { background: #2E8B57; color: white; padding: 0.5rem 1rem; border: none; margin-top: 1rem; cursor: pointer; }
+    button:hover { background: #276f48; }
+  </style>
+</head>
+<body>
+  <h1>Lawla – Upload Case Files</h1>
+  <div class="upload-box">
+    <p>Select one or more PDF, TXT, or RTF files:</p>
+    <input type="file" id="fileInput" multiple accept=".pdf,.txt,.rtf" />
+    <button onclick="uploadFiles()">Upload</button>
+    <ul id="fileList" class="file-list"></ul>
+  </div>
+
+  <script>
+    async function uploadFiles() {
+      const input = document.getElementById('fileInput');
+      const fileList = document.getElementById('fileList');
+      fileList.innerHTML = '';
+
+      if (!input.files.length) {
+        alert('Please select at least one file.');
+        return;
+      }
+
+      for (const file of input.files) {
+        const formData = new FormData();
+        formData.append('data', file, file.name);
+
+        const li = document.createElement('li');
+        li.textContent = `Uploading ${file.name}...`;
+        fileList.appendChild(li);
+
+        try {
+          const res = await fetch('https://n8n-selfhost-1-z0rb.onrender.com/webhook-test/upload-case-file', {
+            method: 'POST',
+            body: formData
+          });
+
+          if (!res.ok) throw new Error(res.status);
+          li.textContent = `✅ ${file.name} uploaded successfully`;
+        } catch (err) {
+          li.textContent = `❌ Failed to upload ${file.name}`;
+        }
+      }
+    }
+  </script>
+</body>
+</html>
